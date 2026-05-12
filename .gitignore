@@ -1,0 +1,66 @@
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# Build artifacts
+**/bin/**
+**/obj/**
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# dotnet tools
+.dotnet/
+.tools/
+
+# User-specific files
+.vs/
+.vscode/
+*.suo
+*.sln.docstates
+*.userprefs
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Environment files (if you want to keep them local)
+appsettings.Development.json
+.env
+.env.local
+
+# Log files
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Coverage reports
+coverage/
+*.coverage
+
+# Package dependencies
+packages/

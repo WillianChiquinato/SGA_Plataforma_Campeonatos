@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["SGA_Plataforma.Api/SGA_Plataforma.Api.csproj", "SGA_Plataforma.Api/"]
+COPY ["SGA_Plataforma.Infrastructure/SGA_Plataforma.Infrastructure.csproj", "SGA_Plataforma.Infrastructure/"]
+COPY ["SGA_Plataforma.Contracts/SGA_Plataforma.Contracts.csproj", "SGA_Plataforma.Contracts/"]
+RUN dotnet restore "SGA_Plataforma.Api/SGA_Plataforma.Api.csproj"
+COPY . .
+WORKDIR "/src/SGA_Plataforma.Api"
+RUN dotnet publish -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/ || exit 1
+
+ENTRYPOINT ["dotnet", "SGA_Plataforma.Api.dll"]
