@@ -222,13 +222,8 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 app.UseCors("AllowFrontend");
-
-// [SEC] Swagger only in development
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 using (var scope = app.Services.CreateScope())
 {
