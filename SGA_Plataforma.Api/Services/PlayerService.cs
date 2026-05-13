@@ -4,7 +4,10 @@ using SGA_Plataforma.Infrastructure.Models;
 using SGA_Plataforma.Infrastructure.Response;
 
 
-public interface IPlayerService : ICrudService<Player> {}
+public interface IPlayerService : ICrudService<Player>
+{
+    Task<CustomResponse<UserPlayerDTO>> GetUserPlayerByIdAsync(int id, CancellationToken cancellationToken = default);
+}
 
 public sealed class PlayerService : IPlayerService
 {
@@ -49,5 +52,21 @@ public sealed class PlayerService : IPlayerService
         return deleted
             ? CustomResponse<bool>.SuccessTrade(true)
             : CustomResponse<bool>.Fail($"{nameof(Player)} com id {id} nao encontrado.");
+    }
+
+    public async Task<CustomResponse<UserPlayerDTO>> GetUserPlayerByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var result = await _repository.GetUserPlayerByIdAsync(id, cancellationToken);
+
+            return result is null
+                ? CustomResponse<UserPlayerDTO>.Fail($"{nameof(User)} com id {id} nao encontrado.")
+                : CustomResponse<UserPlayerDTO>.SuccessTrade(result);
+        }
+        catch (Exception ex)
+        {
+            return CustomResponse<UserPlayerDTO>.Fail($"Erro ao obter usuário: {ex.Message}");
+        }
     }
 }

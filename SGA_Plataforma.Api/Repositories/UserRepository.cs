@@ -6,7 +6,7 @@ using SGA_Plataforma.Infrastructure.Models;
 
 public interface IUserRepository : ICrudRepository<User>
 {
-    Task<User?> GetUserByEmailAndPassword(string email, string password, CancellationToken cancellationToken = default);
+    Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default);
 }
 
 public sealed class UserRepository : IUserRepository 
@@ -80,11 +80,10 @@ public sealed class UserRepository : IUserRepository
         return true;
     }
 
-    public async Task<User?> GetUserByEmailAndPassword(string email, string password, CancellationToken cancellationToken = default)
+    public async Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()
-            .FirstOrDefaultAsync(user => user.Email == email && user.PasswordHash == password, cancellationToken);
+            .FirstOrDefaultAsync(user => user.Email == email, cancellationToken);
     }
-
 }

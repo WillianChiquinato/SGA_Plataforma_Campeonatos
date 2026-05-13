@@ -1,4 +1,5 @@
 ﻿namespace SGA_Plataforma.Api.Services;
+using Microsoft.EntityFrameworkCore;
 using SGA_Plataforma.Api.Repositories;
 using SGA_Plataforma.Infrastructure.Models;
 using SGA_Plataforma.Infrastructure.Response;
@@ -31,8 +32,15 @@ public sealed class MatchEventService : IMatchEventService
 
     public async Task<CustomResponse<MatchEvent>> CreateAsync(MatchEvent entity, CancellationToken cancellationToken = default)
     {
-        var createdEntity = await _repository.CreateAsync(entity, cancellationToken);
-        return CustomResponse<MatchEvent>.SuccessTrade(createdEntity);
+        try
+        {
+            var createdEntity = await _repository.CreateAsync(entity, cancellationToken);
+            return CustomResponse<MatchEvent>.SuccessTrade(createdEntity);
+        }
+        catch (DbUpdateException exception) when (exception.InnerException?.Message.Contains("provider_event_id", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return CustomResponse<MatchEvent>.Fail("Evento duplicado para provider/provider_event_id.");
+        }
     }
 
     public async Task<CustomResponse<MatchEvent>> UpdateAsync(int id, MatchEvent entity, CancellationToken cancellationToken = default)

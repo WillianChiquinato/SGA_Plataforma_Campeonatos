@@ -12,11 +12,13 @@ public sealed class AuthController : ControllerBase
 {
     private readonly TokenService _tokenService;
     private readonly IUserService _userService;
+    private readonly IPlayerService _playerService;
 
-    public AuthController(TokenService tokenService, IUserService userService)
+    public AuthController(TokenService tokenService, IUserService userService, IPlayerService playerService)
     {
         _tokenService = tokenService;
         _userService = userService;
+        _playerService = playerService;
     }
 
     [HttpPost]
@@ -59,22 +61,24 @@ public sealed class AuthController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    [Route("Logged")]
-    public async Task<IActionResult> Logged()
+    [Route("Session")]
+    public async Task<IActionResult> Session()
     {
         var authenticatedUserId = User.GetAuthenticatedUserId();
         if (authenticatedUserId is null)
             return Unauthorized();
 
-        var user = await _userService.GetByIdAsync(authenticatedUserId.Value);
-        if (!user.Success || user.Result == null)
-            return Unauthorized();
+        var userInfo = await _playerService.GetUserPlayerByIdAsync(authenticatedUserId.Value);
 
         return Ok(new
         {
             success = true,
             errors = Array.Empty<string>(),
-            result = user.Result.ToSafeDto()
+            result = new
+            {
+                userId = authenticatedUserId.Value,
+                userInfo = userInfo.Result
+            }
         });
     }
 }

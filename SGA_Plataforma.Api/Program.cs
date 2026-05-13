@@ -12,8 +12,10 @@ using Microsoft.OpenApi.Models;
 using Hangfire.PostgreSql;
 using SGA_Plataforma.Api.Services;
 using SGA_Plataforma.Api.Filters;
+using SGA_Plataforma.Api.Utils;
 using System.Text;
 using SGA_Plataforma.Api.Jobs;
+using SGA_Plataforma.Api.Hubs;
 
 DotNetEnv.Env.Load();
 
@@ -47,6 +49,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -65,6 +68,8 @@ builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.OperationFilter<CrudEntityRequestOperationFilter>();
+
     c.TagActionsBy(api =>
     {
         if (!string.IsNullOrWhiteSpace(api.GroupName))
@@ -191,6 +196,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
+                var accessToken = context.Request.Query["access_token"].ToString();
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrWhiteSpace(accessToken) && path.StartsWithSegments("/signalR"))
+                {
+                    context.Token = accessToken;
+                    return Task.CompletedTask;
+                }
+
                 if (!string.IsNullOrWhiteSpace(context.Token))
                     return Task.CompletedTask;
 
@@ -237,6 +251,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 });
 
 app.MapControllers();
+app.MapHub<OverwolfEventsHub>("/signalR");
 
 static IResult ApiHealthResponse() => Results.Ok("API Running");
 

@@ -24,3 +24,13 @@ public class LoginRequest
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;
 }
+
+public class UserPlayerDTO
+{
+    public int Id { get; set; }
+    public string Email { get; set; } = null!;
+    public string Login { get; set; } = null!;
+    public bool IsActive { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+    public PlayerDTO? Player { get; set; }
+}

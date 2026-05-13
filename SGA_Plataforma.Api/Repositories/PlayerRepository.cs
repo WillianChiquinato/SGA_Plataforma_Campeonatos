@@ -4,7 +4,10 @@ using SGA_Plataforma.Infrastructure.Data;
 using SGA_Plataforma.Infrastructure.Models;
 
 
-public interface IPlayerRepository : ICrudRepository<Player> {}
+public interface IPlayerRepository : ICrudRepository<Player>
+{
+    Task<UserPlayerDTO?> GetUserPlayerByIdAsync(int id, CancellationToken cancellationToken = default);
+}
 
 public sealed class PlayerRepository : IPlayerRepository 
 {
@@ -76,4 +79,28 @@ public sealed class PlayerRepository : IPlayerRepository
 
         return true;
     }
+
+    public async Task<UserPlayerDTO?> GetUserPlayerByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(player => player.UserId == id)
+            .Select(player => new UserPlayerDTO
+            {
+                Id = player.User!.Id,
+                Email = player.User.Email,
+                Login = player.User.Login,
+                IsActive = player.User.IsActive,
+                LastLoginAt = player.User.LastLoginAt,
+                Player = new PlayerDTO
+                {
+                    Id = player.Id,
+                    Nickname = player.Name,
+                    AvartarUrl = player.AvatarUrl ?? string.Empty,
+                    IsProfilePublic = player.IsProfilePublic
+                }
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
 }
