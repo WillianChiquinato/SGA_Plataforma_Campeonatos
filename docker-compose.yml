@@ -34,7 +34,7 @@ services:
       - Jwt__Audience=${JWT_AUDIENCE:-https://localhost}
       - Cors__AllowedOrigins__0=${CORS_ORIGIN:-http://localhost:3000}
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy

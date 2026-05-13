@@ -16,10 +16,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 8080
+EXPOSE 8081
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD curl -f http://localhost:8081/ || exit 1
 
 ENTRYPOINT ["dotnet", "SGA_Plataforma.Api.dll"]
