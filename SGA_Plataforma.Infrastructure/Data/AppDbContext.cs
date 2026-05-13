@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<Player> Players => Set<Player>();
     public DbSet<PlayerMatchStats> PlayerMatchStats => Set<PlayerMatchStats>();
     public DbSet<User> PlatformUsers => Set<User>();
+    public DbSet<ExternalAuthAccount> ExternalAuthAccounts => Set<ExternalAuthAccount>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Round> Rounds => Set<Round>();
     public DbSet<Stage> Stages => Set<Stage>();
@@ -46,6 +47,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(platformUser => platformUser.Login)
             .IsUnique();
+
+        modelBuilder.Entity<ExternalAuthAccount>()
+            .HasIndex(externalAuthAccount => new { externalAuthAccount.Provider, externalAuthAccount.ExternalAccountId })
+            .IsUnique();
+
+        modelBuilder.Entity<ExternalAuthAccount>()
+            .HasIndex(externalAuthAccount => externalAuthAccount.UserId);
 
         modelBuilder.Entity<TeamParticipant>()
             .HasIndex(teamParticipant => new { teamParticipant.TeamId, teamParticipant.PlayerId, teamParticipant.JoinedAt });
