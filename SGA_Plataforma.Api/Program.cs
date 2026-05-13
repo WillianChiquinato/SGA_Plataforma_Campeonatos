@@ -23,6 +23,9 @@ if (builder.Environment.IsProduction())
     builder.WebHost.UseUrls("http://0.0.0.0:8080");
 }
 
+var enableHttpsRedirection = builder.Configuration.GetValue<bool?>("EnableHttpsRedirection")
+    ?? builder.Environment.IsDevelopment();
+
 var allowedCorsOrigins = ResolveAllowedCorsOrigins(builder.Configuration);
 
 var connectionString =
@@ -220,7 +223,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseRateLimiter();
-app.UseHttpsRedirection();
+if (enableHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 
