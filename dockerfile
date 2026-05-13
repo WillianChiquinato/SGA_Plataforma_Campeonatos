@@ -22,4 +22,4 @@ EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
     CMD curl -f http://localhost:8081/ || exit 1
 
-ENTRYPOINT ["dotnet", "SGA_Plataforma.dll"]
+ENTRYPOINT ["dotnet", "SGA_Plataforma.Api.dll"]
