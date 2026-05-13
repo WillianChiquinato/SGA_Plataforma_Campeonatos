@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Amazon.S3;
 using SGA_Plataforma.Api.DependecyInjection;
 using System.Threading.RateLimiting;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Hangfire.PostgreSql;
 using SGA_Plataforma.Api.Services;
 using SGA_Plataforma.Api.Filters;
@@ -78,6 +78,21 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
         Description = "Insira o token JWT no formato: Bearer {seu_token}"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 
     c.OrderActionsBy(apiDesc => apiDesc.GroupName);

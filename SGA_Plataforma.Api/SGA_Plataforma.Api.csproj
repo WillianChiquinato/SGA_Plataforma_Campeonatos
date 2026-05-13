@@ -17,15 +17,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SGA_Plataforma.Infrastructure\SGA_Plataforma.Infrastructure.csproj" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SGA_Plataforma.Infrastructure\SGA_Plataforma.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

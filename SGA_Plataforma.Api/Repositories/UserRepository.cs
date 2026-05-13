@@ -4,20 +4,23 @@ using SGA_Plataforma.Infrastructure.Data;
 using SGA_Plataforma.Infrastructure.Models;
 
 
-public interface IPlatformUserRepository : ICrudRepository<PlatformUser> {}
+public interface IUserRepository : ICrudRepository<User>
+{
+    Task<User?> GetUserByEmailAndPassword(string email, string password, CancellationToken cancellationToken = default);
+}
 
-public sealed class PlatformUserRepository : IPlatformUserRepository 
+public sealed class UserRepository : IUserRepository 
 {
     private readonly AppDbContext _context;
-    private readonly DbSet<PlatformUser> _dbSet;
+    private readonly DbSet<User> _dbSet;
 
-    public PlatformUserRepository(AppDbContext context)
+    public UserRepository(AppDbContext context)
     {
         _context = context;
-        _dbSet = _context.Set<PlatformUser>();
+        _dbSet = _context.Set<User>();
     }
 
-    public async Task<IReadOnlyList<PlatformUser>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()
@@ -25,14 +28,14 @@ public sealed class PlatformUserRepository : IPlatformUserRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<PlatformUser?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()
             .FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
     }
 
-    public async Task<PlatformUser> CreateAsync(PlatformUser entity, CancellationToken cancellationToken = default)
+    public async Task<User> CreateAsync(User entity, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
         entity.CreatedAt = now;
@@ -44,7 +47,7 @@ public sealed class PlatformUserRepository : IPlatformUserRepository
         return entity;
     }
 
-    public async Task<PlatformUser?> UpdateAsync(int id, PlatformUser entity, CancellationToken cancellationToken = default)
+    public async Task<User?> UpdateAsync(int id, User entity, CancellationToken cancellationToken = default)
     {
         var existingEntity = await _dbSet.FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
         if (existingEntity is null)
@@ -76,4 +79,12 @@ public sealed class PlatformUserRepository : IPlatformUserRepository
 
         return true;
     }
+
+    public async Task<User?> GetUserByEmailAndPassword(string email, string password, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FirstOrDefaultAsync(user => user.Email == email && user.PasswordHash == password, cancellationToken);
+    }
+
 }

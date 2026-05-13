@@ -4,8 +4,14 @@ using System.Text.Json.Serialization;
 
 namespace SGA_Plataforma.Infrastructure.Models;
 
-[Table("Platform_User")]
-public class PlatformUser : BaseEntity
+public enum UserRole
+{
+    Admin = 1,
+    PlatformUser = 2
+}
+
+[Table("User")]
+public class User : BaseEntity
 {
     [Required]
     [Column("email")]
@@ -17,8 +23,11 @@ public class PlatformUser : BaseEntity
 
     [Required]
     [Column("password_hash")]
-    [JsonIgnore]
     public string PasswordHash { get; set; } = null!;
+
+    [Required]
+    [Column("role")]
+    public UserRole Role { get; set; }
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;

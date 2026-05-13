@@ -36,5 +36,5 @@ public class MatchLineup : BaseEntity
     public MatchMap? MatchMap { get; set; }
 
     [ForeignKey(nameof(SubmittedByUserId))]
-    public PlatformUser? SubmittedByUser { get; set; }
+    public User? SubmittedByUser { get; set; }
 }

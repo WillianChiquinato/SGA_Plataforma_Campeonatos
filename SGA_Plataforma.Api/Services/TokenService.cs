@@ -24,7 +24,9 @@ public class TokenService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
             new Claim(ClaimTypes.Name, user.Name ?? string.Empty),
-            new Claim(ClaimTypes.Role, user.Role ?? string.Empty)
+            new Claim("Login", user.Login ?? string.Empty),
+            new Claim("IsActive", user.IsActive.ToString()),
+            new Claim("LastLoginAt", user.LastLoginAt?.ToString("o") ?? string.Empty)
         };
 
         var key = new SymmetricSecurityKey(

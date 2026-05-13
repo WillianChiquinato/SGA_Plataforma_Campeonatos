@@ -19,7 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<MatchLineupPlayer> MatchLineupPlayers => Set<MatchLineupPlayer>();
     public DbSet<Player> Players => Set<Player>();
     public DbSet<PlayerMatchStats> PlayerMatchStats => Set<PlayerMatchStats>();
-    public DbSet<PlatformUser> PlatformUsers => Set<PlatformUser>();
+    public DbSet<User> PlatformUsers => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<Round> Rounds => Set<Round>();
     public DbSet<Stage> Stages => Set<Stage>();
@@ -39,11 +39,11 @@ public class AppDbContext : DbContext
             .HasIndex(gameAccount => new { gameAccount.Provider, gameAccount.ExternalAccountId })
             .IsUnique();
 
-        modelBuilder.Entity<PlatformUser>()
+        modelBuilder.Entity<User>()
             .HasIndex(platformUser => platformUser.Email)
             .IsUnique();
 
-        modelBuilder.Entity<PlatformUser>()
+        modelBuilder.Entity<User>()
             .HasIndex(platformUser => platformUser.Login)
             .IsUnique();
 

@@ -19,3 +19,19 @@ public abstract class BaseEntity
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
+
+public static class UserSafeDTO
+{
+    public static UserDTO ToSafeDto(this User user)
+    {
+        return new UserDTO
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Name = user.Login,
+            Login = user.Login,
+            IsActive = user.IsActive,
+            LastLoginAt = user.LastLoginAt
+        };
+    }
+}

@@ -11,14 +11,6 @@ public class Player : BaseEntity
     [Column("name")]
     public string Name { get; set; } = null!;
 
-    [Required]
-    [Column("email")]
-    public string Email { get; set; } = null!;
-
-    [Required]
-    [Column("login")]
-    public string Login { get; set; } = null!;
-
     [Column("avatar_url")]
     public string? AvatarUrl { get; set; }
 
@@ -29,5 +21,5 @@ public class Player : BaseEntity
     public bool IsProfilePublic { get; set; } = true;
 
     [ForeignKey(nameof(UserId))]
-    public PlatformUser? User { get; set; }
+    public User? User { get; set; }
 }
