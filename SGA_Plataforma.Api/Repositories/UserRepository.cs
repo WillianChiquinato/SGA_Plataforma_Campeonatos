@@ -1,4 +1,5 @@
 ﻿namespace SGA_Plataforma.Api.Repositories;
+
 using Microsoft.EntityFrameworkCore;
 using SGA_Plataforma.Infrastructure.Data;
 using SGA_Plataforma.Infrastructure.Models;
@@ -9,7 +10,7 @@ public interface IUserRepository : ICrudRepository<User>
     Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default);
 }
 
-public sealed class UserRepository : IUserRepository 
+public sealed class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
     private readonly DbSet<User> _dbSet;

@@ -30,6 +30,7 @@ public static class UserSafeDTO
             Email = user.Email,
             Name = user.Login,
             Login = user.Login,
+            Role = user.Role.GetDisplayName(),
             IsActive = user.IsActive,
             LastLoginAt = user.LastLoginAt
         };

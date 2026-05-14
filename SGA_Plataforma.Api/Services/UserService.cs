@@ -103,16 +103,16 @@ public sealed class UserService : IUserService
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return CustomResponse<UserDTO>.Fail("Email ou senha inválidos");
 
-            var result = await _repository.GetUserByEmail(email, cancellationToken);
+            var user = await _repository.GetUserByEmail(email, cancellationToken);
 
-            if (result == null || string.IsNullOrWhiteSpace(result.PasswordHash))
+            if (user is null || string.IsNullOrWhiteSpace(user.PasswordHash))
                 return CustomResponse<UserDTO>.Fail("Email ou senha inválidos");
 
-            var isValidPassword = VerifyPassword(password, result.PasswordHash);
+            var isValidPassword = VerifyPassword(password, user.PasswordHash);
 
             return !isValidPassword
                     ? CustomResponse<UserDTO>.Fail("Email ou senha inválidos")
-                    : CustomResponse<UserDTO>.SuccessTrade(result.ToSafeDto());
+                    : CustomResponse<UserDTO>.SuccessTrade(user.ToSafeDto());
         }
         catch (Exception ex)
         {

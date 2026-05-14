@@ -15,6 +15,7 @@ public class UserDTO
     public string Name { get; set; } = null!;
     public string Email { get; set; } = null!;
     public string Login { get; set; } = null!;
+    public string? Role { get; set; }
     public bool IsActive { get; set; }
     public DateTime? LastLoginAt { get; set; }
 }
@@ -30,6 +31,7 @@ public class UserPlayerDTO
     public int Id { get; set; }
     public string Email { get; set; } = null!;
     public string Login { get; set; } = null!;
+    public string? Role { get; set; }
     public bool IsActive { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public PlayerDTO? Player { get; set; }

@@ -89,6 +89,11 @@ public sealed class PlayerRepository : IPlayerRepository
                 Id = player.User!.Id,
                 Email = player.User.Email,
                 Login = player.User.Login,
+                Role = player.User.Role == UserRole.Admin
+                    ? "Administrador"
+                    : player.User.Role == UserRole.PlatformUser
+                        ? "Jogador"
+                        : "Desconhecido",
                 IsActive = player.User.IsActive,
                 LastLoginAt = player.User.LastLoginAt,
                 Player = new PlayerDTO

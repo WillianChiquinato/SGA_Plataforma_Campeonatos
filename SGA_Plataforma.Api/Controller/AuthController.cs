@@ -22,26 +22,31 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost]
-    [AllowAnonymous]
-    [EnableRateLimiting("loginPolicy")]
     [Route("Login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var user = await _userService.GetUserByEmailAndPassword(request.Email!, request.Password!);
-
-        if (user.Errors.Count > 0)
+        try
         {
-            return BadRequest(user.Errors);
+            var user = await _userService.GetUserByEmailAndPassword(request.Email!, request.Password!);
+
+            if (user.Errors.Count > 0)
+            {
+                return BadRequest(user.Errors);
+            }
+
+            var token = _tokenService.GenerateToken(user.Result);
+            _tokenService.AppendAuthCookie(Response, token, Request.IsHttps);
+
+            return Ok(new
+            {
+                token,
+                user = user.Result
+            });
         }
-
-        var token = _tokenService.GenerateToken(user.Result);
-        _tokenService.AppendAuthCookie(Response, token, Request.IsHttps);
-
-        return Ok(new
+        catch (Exception ex)
         {
-            token,
-            user = user.Result
-        });
+            return StatusCode(500, $"Erro ao processar login: {ex.Message}");
+        }
     }
 
     [HttpPost]
@@ -68,17 +73,24 @@ public sealed class AuthController : ControllerBase
         if (authenticatedUserId is null)
             return Unauthorized();
 
-        var userInfo = await _playerService.GetUserPlayerByIdAsync(authenticatedUserId.Value);
-
-        return Ok(new
+        try
         {
-            success = true,
-            errors = Array.Empty<string>(),
-            result = new
+            var userInfo = await _playerService.GetUserPlayerByIdAsync(authenticatedUserId.Value);
+
+            return Ok(new
             {
-                userId = authenticatedUserId.Value,
-                userInfo = userInfo.Result
-            }
-        });
+                success = true,
+                errors = Array.Empty<string>(),
+                result = new
+                {
+                    userId = authenticatedUserId.Value,
+                    userInfo = userInfo.Result
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Erro ao recuperar sessão: {ex.Message}");
+        }
     }
 }

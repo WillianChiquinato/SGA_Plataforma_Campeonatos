@@ -10,6 +10,19 @@ public enum UserRole
     PlatformUser = 2
 }
 
+public static class UserRoleExtensions
+{
+    public static string GetDisplayName(this UserRole role)
+    {
+        return role switch
+        {
+            UserRole.Admin => "Administrador",
+            UserRole.PlatformUser => "Jogador",
+            _ => "Desconhecido"
+        };
+    }
+}
+
 [Table("User")]
 public class User : BaseEntity
 {
