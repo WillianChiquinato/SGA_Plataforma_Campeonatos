@@ -10,7 +10,7 @@ public static class JwtConfiguration
 
     public static string GetKey(IConfiguration configuration)
     {
-        var key = GetConfigurationValue(configuration, "Jwt:Key", "JWT_KEY");
+        var (key, source) = GetConfigurationValue(configuration, "Jwt:Key", "JWT_KEY");
 
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -22,7 +22,7 @@ public static class JwtConfiguration
         if (keySizeInBytes < MinimumJwtKeySizeInBytes)
         {
             throw new InvalidOperationException(
-                $"JWT Key invalida. O HS256 exige no minimo {MinimumJwtKeySizeInBits} bits ({MinimumJwtKeySizeInBytes} bytes), mas a chave configurada possui {keySizeInBytes} bytes.");
+                $"JWT Key invalida. O HS256 exige no minimo {MinimumJwtKeySizeInBits} bits ({MinimumJwtKeySizeInBytes} bytes), mas a chave carregada de '{source}' possui {keySizeInBytes} bytes.");
         }
 
         return key;
@@ -53,7 +53,7 @@ public static class JwtConfiguration
 
     public static double GetExpireMinutes(IConfiguration configuration)
     {
-        var rawValue = GetConfigurationValue(configuration, "Jwt:ExpireMinutes", "JWT_EXPIRE_MINUTES");
+        var (rawValue, _) = GetConfigurationValue(configuration, "Jwt:ExpireMinutes", "JWT_EXPIRE_MINUTES");
         if (string.IsNullOrWhiteSpace(rawValue))
         {
             throw new InvalidOperationException(
@@ -75,7 +75,7 @@ public static class JwtConfiguration
         string environmentKey,
         string errorMessage)
     {
-        var value = GetConfigurationValue(configuration, configKey, environmentKey);
+        var (value, _) = GetConfigurationValue(configuration, configKey, environmentKey);
         if (string.IsNullOrWhiteSpace(value))
         {
             throw new InvalidOperationException(errorMessage);
@@ -84,14 +84,17 @@ public static class JwtConfiguration
         return value;
     }
 
-    private static string? GetConfigurationValue(IConfiguration configuration, string configKey, string environmentKey)
+    private static (string? Value, string Source) GetConfigurationValue(
+        IConfiguration configuration,
+        string configKey,
+        string environmentKey)
     {
         var configuredValue = configuration[configKey];
         if (!string.IsNullOrWhiteSpace(configuredValue))
         {
-            return configuredValue;
+            return (configuredValue, configKey);
         }
 
-        return Environment.GetEnvironmentVariable(environmentKey);
+        return (Environment.GetEnvironmentVariable(environmentKey), environmentKey);
     }
 }
