@@ -1,6 +1,65 @@
 @SGA_Plataforma.Api_HostAddress = http://localhost:5108
+@deviceId = overwolf-local-device-001
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ3aWxsaWFuY2hpcXVpbmF0b0Bob3RtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJXaWxsaXppbjAwMSIsIkxvZ2luIjoiV2lsbGl6aW4wMDEiLCJJc0FjdGl2ZSI6IlRydWUiLCJMYXN0TG9naW5BdCI6IjIwMjYtMDUtMTRUMDA6MDk6MzEuMjU3NzE3MFoiLCJleHAiOjE3Nzg3OTExODQsImlzcyI6IlNHQV9QbGF0YWZvcm1hIiwiYXVkIjoiU0dBX1BsYXRhZm9ybWFfVXNlcnMifQ.jCsokTfSeNhG0FZxTkq7W_4GetHdbe839uIN1VdJrYU
+@refreshToken = cHocuahxv4XbH631Qvr9rQzesGSL9WYiNW4XkHfuR99xdK4nVHUEfpqoXMMp7Lo9
 
-GET {{SGA_Plataforma.Api_HostAddress}}/weatherforecast/
+### Health check
+GET {{SGA_Plataforma.Api_HostAddress}}/
 Accept: application/json
 
-###
+### Overwolf session via web session/cookie
+# Execute this after logging in on the web app with the same browser/cookie context.
+GET {{SGA_Plataforma.Api_HostAddress}}/overwolf/auth/session?deviceId={{deviceId}}
+Accept: application/json
+
+### Link current authenticated web user to a deviceId
+POST {{SGA_Plataforma.Api_HostAddress}}/overwolf/link
+Content-Type: application/json
+
+{
+	"deviceId": "{{deviceId}}"
+}
+
+### Refresh Overwolf app token pair
+POST {{SGA_Plataforma.Api_HostAddress}}/overwolf/refresh
+Content-Type: application/json
+
+{
+	"deviceId": "{{deviceId}}",
+	"refreshToken": "{{refreshToken}}"
+}
+
+### Overwolf ingest alias expected by the app
+POST {{SGA_Plataforma.Api_HostAddress}}/events/ingest
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+	"matchId": 1,
+	"matchMapId": 1,
+	"roundId": 1,
+	"gameId": 1,
+	"eventType": "kill",
+	"eventTime": "2026-05-14T12:00:00Z",
+	"provider": "overwolf",
+	"providerEventId": "evt-001",
+	"ingestionSessionId": "session-001",
+	"sequenceNumber": 1,
+	"source": "overwolf-app",
+	"dedupKey": "match-1-round-1-evt-001",
+	"payload": {
+		"killer": "player-a",
+		"victim": "player-b"
+	}
+}
+
+### SignalR negotiate on /hubs/player
+# This is the closest HTTP-level test to what the frontend will do before opening WebSocket.
+POST {{SGA_Plataforma.Api_HostAddress}}/hubs/player/negotiate?negotiateVersion=1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+	"protocol": "json",
+	"version": 1
+}

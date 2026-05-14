@@ -16,6 +16,7 @@ using SGA_Plataforma.Api.Utils;
 using System.Text;
 using SGA_Plataforma.Api.Jobs;
 using SGA_Plataforma.Api.Hubs;
+using StackExchange.Redis;
 
 DotNetEnv.Env.Load();
 
@@ -29,6 +30,7 @@ var enableHttpsRedirection = builder.Configuration.GetValue<bool?>("EnableHttpsR
     ?? builder.Environment.IsDevelopment();
 
 var allowedCorsOrigins = ResolveAllowedCorsOrigins(builder.Configuration);
+var redisSettings = ResolveRedisSettings(builder.Configuration);
 
 var connectionString =
     $"Host={Environment.GetEnvironmentVariable("DB_SERVER")};" +
@@ -49,7 +51,17 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-builder.Services.AddSignalR();
+ConfigureRedis(builder.Services, redisSettings);
+var signalRBuilder = builder.Services.AddSignalR();
+if (redisSettings.Enabled)
+{
+    signalRBuilder.AddStackExchangeRedis(options =>
+    {
+        options.Configuration.ChannelPrefix = RedisChannel.Literal(redisSettings.ChannelPrefix);
+        options.ConnectionFactory = async writer =>
+            await ConnectionMultiplexer.ConnectAsync(redisSettings.Configuration, writer);
+    });
+}
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -199,7 +211,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 var accessToken = context.Request.Query["access_token"].ToString();
                 var path = context.HttpContext.Request.Path;
 
-                if (!string.IsNullOrWhiteSpace(accessToken) && path.StartsWithSegments("/signalR"))
+                if (!string.IsNullOrWhiteSpace(accessToken)
+                    && (path.StartsWithSegments("/signalR") || path.StartsWithSegments("/hubs/player")))
                 {
                     context.Token = accessToken;
                     return Task.CompletedTask;
@@ -247,6 +260,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 
 app.MapControllers();
 app.MapHub<OverwolfEventsHub>("/signalR");
+app.MapHub<OverwolfEventsHub>("/hubs/player");
 
 static IResult ApiHealthResponse() => Results.Ok("API Running");
 
@@ -292,4 +306,73 @@ static string ResolveRateLimitKey(HttpContext httpContext, bool isDevelopment)
 
     var path = httpContext.Request.Path.Value ?? "unknown-path";
     return $"{remoteIp}:{path}";
+}
+
+static void ConfigureRedis(IServiceCollection services, RedisSettings redisSettings)
+{
+    services.AddSingleton(redisSettings);
+
+    if (!redisSettings.Enabled)
+    {
+        services.AddDistributedMemoryCache();
+        return;
+    }
+
+    services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisSettings.Configuration));
+    services.AddStackExchangeRedisCache(options =>
+    {
+        options.ConfigurationOptions = redisSettings.Configuration;
+        options.InstanceName = redisSettings.InstanceName;
+    });
+}
+
+static RedisSettings ResolveRedisSettings(ConfigurationManager configuration)
+{
+    var endpoint = Environment.GetEnvironmentVariable("REDIS_ENDPOINT");
+    var password = Environment.GetEnvironmentVariable("REDIS_PASSWORD");
+    var portValue = Environment.GetEnvironmentVariable("REDIS_PORT");
+    var channelPrefix = Environment.GetEnvironmentVariable("REDIS_CHANNEL_PREFIX");
+    var instanceName = Environment.GetEnvironmentVariable("REDIS_INSTANCE_NAME");
+
+    if (string.IsNullOrWhiteSpace(endpoint) || string.IsNullOrWhiteSpace(password))
+    {
+        return RedisSettings.Disabled(channelPrefix!, instanceName!);
+    }
+
+    var port = int.TryParse(portValue, out var parsedPort) ? parsedPort : 6379;
+    var useSsl = ParseBoolean(Environment.GetEnvironmentVariable("REDIS_SSL")) ?? true;
+
+    var options = new ConfigurationOptions
+    {
+        AbortOnConnectFail = false,
+        Ssl = useSsl,
+        Password = password,
+        ConnectRetry = 3,
+        ConnectTimeout = 10000,
+        SyncTimeout = 10000,
+        AsyncTimeout = 10000,
+        KeepAlive = 60
+    };
+
+    options.EndPoints.Add(endpoint, port);
+
+    return RedisSettings.CreateEnabled(options, channelPrefix!, instanceName!);
+}
+
+static bool? ParseBoolean(string? value)
+{
+    return bool.TryParse(value, out var parsedValue) ? parsedValue : null;
+}
+
+sealed record RedisSettings(
+    bool Enabled,
+    ConfigurationOptions Configuration,
+    string ChannelPrefix,
+    string InstanceName)
+{
+    public static RedisSettings Disabled(string channelPrefix, string instanceName)
+        => new(false, new ConfigurationOptions(), channelPrefix, instanceName);
+
+    public static RedisSettings CreateEnabled(ConfigurationOptions configuration, string channelPrefix, string instanceName)
+        => new(true, configuration, channelPrefix, instanceName);
 }

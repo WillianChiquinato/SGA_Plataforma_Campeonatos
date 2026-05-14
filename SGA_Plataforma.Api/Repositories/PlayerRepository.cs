@@ -95,7 +95,7 @@ public sealed class PlayerRepository : IPlayerRepository
                 {
                     Id = player.Id,
                     Nickname = player.Name,
-                    AvartarUrl = player.AvatarUrl ?? string.Empty,
+                    AvatarUrl = player.AvatarUrl ?? string.Empty,
                     IsProfilePublic = player.IsProfilePublic
                 }
             })

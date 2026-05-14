@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SGA_Plataforma.Infrastructure\SGA_Plataforma.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

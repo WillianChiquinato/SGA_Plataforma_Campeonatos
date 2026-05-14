@@ -17,6 +17,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <PackageReference Include="Scrutor" Version="7.0.0" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
@@ -24,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SGA_Plataforma.Contracts\SGA_Plataforma.Contracts.csproj" />
     <ProjectReference Include="..\SGA_Plataforma.Infrastructure\SGA_Plataforma.Infrastructure.csproj" />
   </ItemGroup>
 
