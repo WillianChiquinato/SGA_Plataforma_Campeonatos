@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SGA_Plataforma.Infrastructure.Models;
+using SGA_Plataforma.Api.Utils;
 
 namespace SGA_Plataforma.Api.Services;
 
@@ -29,19 +29,16 @@ public class TokenService
             new Claim("LastLoginAt", user.LastLoginAt?.ToString("o") ?? string.Empty)
         };
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+        var creds = new SigningCredentials(
+            JwtConfiguration.GetSigningKey(_config),
+            SecurityAlgorithms.HmacSha256
         );
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(
-                Convert.ToDouble(_config["Jwt:ExpireMinutes"])
-            ),
+            expires: DateTime.Now.AddMinutes(JwtConfiguration.GetExpireMinutes(_config)),
             signingCredentials: creds
         );
 
@@ -51,7 +48,7 @@ public class TokenService
     public void AppendAuthCookie(HttpResponse response, string token, bool isHttps)
     {
         var expiresAt = DateTimeOffset.UtcNow.AddMinutes(
-            Convert.ToDouble(_config["Jwt:ExpireMinutes"])
+            JwtConfiguration.GetExpireMinutes(_config)
         );
 
         response.Cookies.Append(AuthCookieName, token, new CookieOptions
@@ -112,8 +109,6 @@ public class TokenService
     public int? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-
         try
         {
             tokenHandler.ValidateToken(token, new TokenValidationParameters
@@ -122,9 +117,9 @@ public class TokenService
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = _config["Jwt:Issuer"],
-                ValidAudience = _config["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(key)
+                ValidIssuer = JwtConfiguration.GetIssuer(_config),
+                ValidAudience = JwtConfiguration.GetAudience(_config),
+                IssuerSigningKey = JwtConfiguration.GetSigningKey(_config)
             }, out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;

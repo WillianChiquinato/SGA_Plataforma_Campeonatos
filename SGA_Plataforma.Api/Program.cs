@@ -181,12 +181,9 @@ builder.Services.AddHttpClient();
 //     return new AmazonS3Client(accessKeyId, secretAccessKey, s3Config);
 // });
 
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("JWT Key não configurado. Adicione 'Jwt:Key' em appsettings.json ou defina a variável de ambiente JWT_KEY.");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"]
-    ?? throw new InvalidOperationException("JWT Issuer não configurado. Adicione 'Jwt:Issuer' em appsettings.json ou defina a variável de ambiente JWT_ISSUER.");
-var jwtAudience = builder.Configuration["Jwt:Audience"]
-    ?? throw new InvalidOperationException("JWT Audience não configurado. Adicione 'Jwt:Audience' em appsettings.json ou defina a variável de ambiente JWT_AUDIENCE.");
+var jwtIssuer = JwtConfiguration.GetIssuer(builder.Configuration);
+var jwtAudience = JwtConfiguration.GetAudience(builder.Configuration);
+var jwtSigningKey = JwtConfiguration.GetSigningKey(builder.Configuration);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -199,9 +196,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)
-            )
+            IssuerSigningKey = jwtSigningKey
         };
 
         options.Events = new JwtBearerEvents
