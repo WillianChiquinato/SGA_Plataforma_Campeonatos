@@ -17,6 +17,7 @@ using System.Text;
 using SGA_Plataforma.Api.Jobs;
 using SGA_Plataforma.Api.Hubs;
 using StackExchange.Redis;
+using Microsoft.EntityFrameworkCore.Storage;
 
 DotNetEnv.Env.Load();
 
@@ -158,7 +159,13 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options
+        .UseNpgsql(connectionString)
+        .EnableSensitiveDataLogging()
+        .LogTo(Console.WriteLine, LogLevel.Information);
+});
 
 builder.Services.AddProjectDependencies();
 builder.Services.AddHttpClient();
@@ -237,6 +244,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    await DbIdentitySequenceSynchronizer.SynchronizeAsync(db);
 }
 
 app.UseRateLimiter();

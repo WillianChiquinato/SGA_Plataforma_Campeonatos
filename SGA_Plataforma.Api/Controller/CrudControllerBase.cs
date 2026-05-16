@@ -33,7 +33,7 @@ public abstract class CrudControllerBase<TEntity> : ControllerBase where TEntity
     [HttpPost]
     public virtual async Task<ActionResult<CustomResponse<TEntity>>> Create([FromBody] TEntity entity, CancellationToken cancellationToken)
     {
-        var response = await _service.CreateAsync(EntityRequestSanitizer.StripNavigations(entity), cancellationToken);
+        var response = await _service.CreateAsync(EntityRequestSanitizer.SanitizeForCreate(entity), cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = response.Result.Id }, response);
     }
 

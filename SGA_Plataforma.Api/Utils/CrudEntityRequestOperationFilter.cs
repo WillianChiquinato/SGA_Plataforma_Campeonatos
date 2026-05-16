@@ -11,6 +11,13 @@ namespace SGA_Plataforma.Api.Utils;
 
 public sealed class CrudEntityRequestOperationFilter : IOperationFilter
 {
+    private static readonly HashSet<string> CreateExcludedProperties = new(StringComparer.Ordinal)
+    {
+        nameof(BaseEntity.Id),
+        nameof(BaseEntity.CreatedAt),
+        nameof(BaseEntity.UpdatedAt)
+    };
+
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         if (operation.RequestBody is null || !IsWriteOperation(context.ApiDescription.HttpMethod))
@@ -27,9 +34,12 @@ public sealed class CrudEntityRequestOperationFilter : IOperationFilter
             return;
         }
 
+        var isCreateOperation = string.Equals(context.ApiDescription.HttpMethod, HttpMethods.Post, StringComparison.OrdinalIgnoreCase);
+
         var allowedPropertyNames = entityType
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(property => !EntityRequestSanitizer.IsNavigationProperty(property))
+            .Where(property => !isCreateOperation || !CreateExcludedProperties.Contains(property.Name))
             .Select(GetJsonPropertyName)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 

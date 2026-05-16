@@ -6,6 +6,14 @@ namespace SGA_Plataforma.Api.Utils;
 
 public static class EntityRequestSanitizer
 {
+    public static TEntity SanitizeForCreate<TEntity>(TEntity entity) where TEntity : BaseEntity
+    {
+        entity.Id = default;
+        entity.CreatedAt = default;
+        entity.UpdatedAt = default;
+        return StripNavigations(entity);
+    }
+
     public static TEntity StripNavigations<TEntity>(TEntity entity) where TEntity : BaseEntity
     {
         foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance))
