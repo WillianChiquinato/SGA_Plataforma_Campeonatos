@@ -1,10 +1,14 @@
 ﻿namespace SGA_Plataforma.Api.Services;
+
 using SGA_Plataforma.Api.Repositories;
 using SGA_Plataforma.Infrastructure.Models;
 using SGA_Plataforma.Infrastructure.Response;
 
 
-public interface IMatchService : ICrudService<Match> {}
+public interface IMatchService : ICrudService<Match>
+{
+    Task<CustomResponse<List<MatchTeamListDTO>>> GetMatchesByTournamentId(int tournamentId, CancellationToken cancellationToken = default);
+}
 
 public sealed class MatchService : IMatchService
 {
@@ -49,5 +53,15 @@ public sealed class MatchService : IMatchService
         return deleted
             ? CustomResponse<bool>.SuccessTrade(true)
             : CustomResponse<bool>.Fail($"{nameof(Match)} com id {id} nao encontrado.");
+    }
+
+    public async Task<CustomResponse<List<MatchTeamListDTO>>> GetMatchesByTournamentId(
+    int tournamentId,
+    CancellationToken cancellationToken = default)
+    {
+        var result = await _repository.GetMatchesByTournamentId(tournamentId, cancellationToken);
+
+        return CustomResponse<List<MatchTeamListDTO>>
+            .SuccessTrade(result);
     }
 }

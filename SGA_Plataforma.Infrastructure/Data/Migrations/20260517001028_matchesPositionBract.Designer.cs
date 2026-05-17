@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SGA_Plataforma.Infrastructure.Data;
@@ -11,9 +12,11 @@ using SGA_Plataforma.Infrastructure.Data;
 namespace SGA_Plataforma.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260517001028_matchesPositionBract")]
+    partial class matchesPositionBract
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,6 +248,8 @@ namespace SGA_Plataforma.Infrastructure.Migrations
                     b.HasIndex("StatusId");
 
                     b.HasIndex("TournamentId");
+
+                    b.HasIndex("WinnerTeamId");
 
                     b.ToTable("Matches");
                 });
@@ -1302,6 +1307,10 @@ namespace SGA_Plataforma.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SGA_Plataforma.Infrastructure.Models.Team", "WinnerTeam")
+                        .WithMany()
+                        .HasForeignKey("WinnerTeamId");
+
                     b.Navigation("Game");
 
                     b.Navigation("Stage");
@@ -1309,6 +1318,8 @@ namespace SGA_Plataforma.Infrastructure.Migrations
                     b.Navigation("Status");
 
                     b.Navigation("Tournament");
+
+                    b.Navigation("WinnerTeam");
                 });
 
             modelBuilder.Entity("SGA_Plataforma.Infrastructure.Models.MatchEvent", b =>

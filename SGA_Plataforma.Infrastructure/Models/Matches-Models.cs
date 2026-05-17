@@ -24,6 +24,9 @@ public class Match : BaseEntity
     [Column("best_of")]
     public int? BestOf { get; set; }
 
+    [Column("bracket_position")]
+    public string? BracketPosition { get; set; }
+
     [Column("started_at")]
     public DateTime? StartedAt { get; set; }
 
@@ -39,9 +42,6 @@ public class Match : BaseEntity
 
     [ForeignKey(nameof(StatusId))]
     public Status? Status { get; set; }
-
-    [ForeignKey(nameof(WinnerTeamId))]
-    public Team? WinnerTeam { get; set; }
 
     [ForeignKey(nameof(GameId))]
     public Game? Game { get; set; }

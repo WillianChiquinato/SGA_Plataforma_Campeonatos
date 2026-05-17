@@ -4,7 +4,10 @@ using SGA_Plataforma.Infrastructure.Data;
 using SGA_Plataforma.Infrastructure.Models;
 
 
-public interface IMatchesTeamsRepository : ICrudRepository<MatchesTeams> {}
+public interface IMatchesTeamsRepository : ICrudRepository<MatchesTeams>
+{
+    Task<List<MatchesTeams>> GetTeamsByMatchAndTeamId(int matchId, int teamId, CancellationToken cancellationToken = default);
+}
 
 public sealed class MatchesTeamsRepository : IMatchesTeamsRepository 
 {
@@ -75,5 +78,13 @@ public sealed class MatchesTeamsRepository : IMatchesTeamsRepository
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;
+    }
+
+    public async Task<List<MatchesTeams>> GetTeamsByMatchAndTeamId(int matchId, int teamId, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(mt => mt.MatchId == matchId && mt.TeamId == teamId)
+            .ToListAsync(cancellationToken);
     }
 }

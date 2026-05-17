@@ -77,5 +77,11 @@ public class AppDbContext : DbContext
             .HasIndex(matchEvent => new { matchEvent.Provider, matchEvent.ProviderEventId })
             .IsUnique()
             .HasFilter("provider_event_id IS NOT NULL");
+
+        modelBuilder.Entity<MatchMap>()
+            .HasOne(matchMap => matchMap.WinnerTeam)
+            .WithMany()
+            .HasForeignKey(matchMap => matchMap.WinnerTeamId)
+            .IsRequired(false);
     }
 }

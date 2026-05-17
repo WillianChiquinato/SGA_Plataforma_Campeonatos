@@ -1,12 +1,16 @@
 ﻿namespace SGA_Plataforma.Api.Repositories;
+
 using Microsoft.EntityFrameworkCore;
 using SGA_Plataforma.Infrastructure.Data;
 using SGA_Plataforma.Infrastructure.Models;
+using SGA_Plataforma.Infrastructure.Response;
 
+public interface IMatchRepository : ICrudRepository<Match>
+{
+    Task<List<MatchTeamListDTO>> GetMatchesByTournamentId(int tournamentId, CancellationToken cancellationToken = default);
+}
 
-public interface IMatchRepository : ICrudRepository<Match> {}
-
-public sealed class MatchRepository : IMatchRepository 
+public sealed class MatchRepository : IMatchRepository
 {
     private readonly AppDbContext _context;
     private readonly DbSet<Match> _dbSet;
@@ -75,5 +79,48 @@ public sealed class MatchRepository : IMatchRepository
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;
+    }
+
+    public async Task<List<MatchTeamListDTO>> GetMatchesByTournamentId(int tournamentId,
+    CancellationToken cancellationToken = default)
+    {
+        var matches = await _dbSet
+            .Where(m => m.TournamentId == tournamentId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var matcheTeams = await _context.MatchTeams
+            .Where(mt => matches.Select(m => m.Id).Contains(mt.MatchId))
+            .Include(mt => mt.Team)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var result = matches.Select(match => new MatchTeamListDTO
+        {
+            Id = match.Id,
+            TournamentId = match.TournamentId,
+            BestOf = match.BestOf,
+            BracketPosition = match.BracketPosition,
+            StartedAt = match.StartedAt,
+
+            Teams = matcheTeams
+                .Where(mt => mt.MatchId == match.Id)
+                .Select(mt => new MatchTeamDTO
+                {
+                    TeamId = mt.TeamId,
+                    Side = mt.Side ?? "",
+                    Score = mt.Score,
+                    IsWinner = mt.IsWinner,
+
+                Team = new TeamDTO
+                {
+                    Id = mt.Team!.Id,
+                    Name = mt.Team.Name,
+                    LogoUrl = mt.Team.LogoUrl,
+                }
+            }).ToList()
+        }).ToList();
+
+        return result;
     }
 }

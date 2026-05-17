@@ -4,7 +4,10 @@ using SGA_Plataforma.Infrastructure.Models;
 using SGA_Plataforma.Infrastructure.Response;
 
 
-public interface IMatchesTeamsService : ICrudService<MatchesTeams> {}
+public interface IMatchesTeamsService : ICrudService<MatchesTeams>
+{
+    Task<CustomResponse<IReadOnlyList<MatchesTeams>>> GetTeamsByMatchAndTeamId(int matchId, int teamId, CancellationToken cancellationToken = default);
+}
 
 public sealed class MatchesTeamsService : IMatchesTeamsService
 {
@@ -49,5 +52,11 @@ public sealed class MatchesTeamsService : IMatchesTeamsService
         return deleted
             ? CustomResponse<bool>.SuccessTrade(true)
             : CustomResponse<bool>.Fail($"{nameof(MatchesTeams)} com id {id} nao encontrado.");
+    }
+
+    public async Task<CustomResponse<IReadOnlyList<MatchesTeams>>> GetTeamsByMatchAndTeamId(int matchId, int teamId, CancellationToken cancellationToken = default)
+    {
+        var matchTeams = await _repository.GetTeamsByMatchAndTeamId(matchId, teamId, cancellationToken);
+        return CustomResponse<IReadOnlyList<MatchesTeams>>.SuccessTrade(matchTeams, matchTeams.Count);
     }
 }
